@@ -1,244 +1,187 @@
-// This is a JavaScript document with library p5.js for the Assignment 1 of
-// Interactive Information Visualization
-// The fucntion of setup() is for loading data and initialization
-// The function of draw() is for dawing and updating 
-// In the part of Visualization
-// part one
-// I used the size of rectangle to present how many pages for a paper(normal)
-// For the case special, like paper has more than 10 pages; lack of data;data not clear,
-// I use different value to present. 
-// more than 10 pages(150); lack of data (0);data not clear (100)
-// four different color present 4 conferences
-// part two
-// a pieChart (Shape and Orientation)
-// present each conference has presented how many papers during 26 years in the format percentage
-// and the percentage of the number of papers in every five years
-// also, use the value to present the different items
+var table1,table2;
+var keyword1,keyword2;
+var times1,times2;
+var percentage1,percentage2;
+var pos1,pos2;
 
-
-var w = 2000;
-var h = 2000;
-var table;
-var yearCol;
-var conferenceCOl;
-var titleCol;
-var DOICol;
-var linkCol;
-var firstPageCol;
-var lastPageCol;
-var typeCol;
-var abstractCol;
-var authorNames;
-var firstAuthorAffiliation;
-var minYear;
-var maxYear;
-var years = [maxYear - minYear + 1] ;
-var pages = [];
-
-var minWidth = 1;
-var maxWidth = 5;
-
-var fills = [0,50,100,150,200];
-var conferences = ["VAST","InfoVis","SciVis","Vis"];
-
-
+var w = 990;
+var h = 1200;
 function preload(){
-  table = loadTable("data/vispubdata-grobid-min.csv","csv","header");
+  table1 = loadTable("data/keyword-citation.csv","csv","header");
+  table2 = loadTable("data/keyword-orginal-paper.csv","csv","header");
 }
 
 function setup() {
   createCanvas(w,h);
+
+  keyword1 = table1.getColumn("keyword");
+  keyword2 = table2.getColumn("keyword");
+  times1 = table1.getColumn("times");
+  times2 = table2.getColumn("times");
+  percentage1 = table1.getColumn("percentage");
+  percentage2 = table2.getColumn("percentage");
+  
+
+  // set drawing parameters
+  background(255);
+  textAlign(CENTER, CENTER);
+  textSize(18);
+  noStroke();
+  fill(255);
   noLoop();
-  background(255,255,255);
+  
+  // // set position
+  // for(var i=0; i<10;++i){
 
-  yearCol = table.getColumn("Year");
-  minYear = min(yearCol);
-  maxYear = max(yearCol);
-
-  conferenceCol = table.getColumn("Conference");
-  titleCol = table.getColumn("Paper.Title");
-  DOICol = table.getColumn("Paper.DOI");
-  LinkCol = table.getColumn("Link");
-  firstPageCol = table.getColumn("First.page"); 
-  lastPageCol = table.getColumn("Last.page"); 
-  typeCol = table.getColumn(7);
-  abstractCol = table.getColumn("Abstract");
-  authorNames = table.getColumn("Author.Names");
-  firstAuthorAffiliation = table.getColumn("First.Author.Affiliation");
-
+  //   width = random(400)+50;
+  //   height = random(400)+50;
+  // }
+  
 }
+
+function draw() {
   
-function draw(){
-  var spacing = 60;
-  var lineheight = 30;
-  var x,y;
-  var totalYears = maxYear - minYear +1; // 
-  var totalConference = conferences.length;
+  addLegend2(50.00,40.00,percentage1,keyword1);
   
-  textSize(26);
-  text("Year",15, 30)
+  drawCircle(50.00,40.00,percentage1,times2,keyword1,keyword2);
+  addGrid(50);
+  addText();
+  // var angles = [];
+  // angles = calculAngles(percentage1);
+  // pieChart(500, 250, 300 ,angles);
+  // addLegend(500, 250, 300,keyword1,angles);
+  // var index = searchOriginalKeyWord(keyword2,keyword1[2]);
   
-  textSize(30);
-  for(var i=0; i< totalYears;++i){
-    fill(0,102,153);
-    text(minYear + i ,10, 80 + i * spacing); 
-    years[i] = 0;
-  }
 
-  var confs = [0,0,0,0];
-  for (var i = 0 ;i < table.getRowCount(); ++i) {
-
-    pages[i] = lastPageCol[i] - firstPageCol[i] + 1;
-    var totalPages = lastPageCol[i] - firstPageCol[i] + 1;
-    var index =  yearCol[i]% minYear;
-    years[index] += 1;
-    var conf = conferenceCol[i];
-
-    strokeWeight(1);
-    noFill();
-
-    switch(conf){
-      case "VAST":
-        stroke(255,0,0);
-        confs[0] +=1;
-        break;
-      case "InfoVis":
-        stroke(0,255,255);
-        confs[1] +=1;
-        break;
-      case "Vis":
-        stroke(127,0,255);
-        confs[2] +=1;
-        break;
-      case "SciVis":
-        stroke(255,255,10);
-        confs[3] +=1;
-        break;
-      default:
-        break;
-    }
-    if(totalPages == min(pages)){
-      fill(100);
-      lineheight = 30;
-      x = 80 + 10*years[index];
-      y = 50 + index * spacing;
-      rect(x,y,10,lineheight);
-    } 
-    else {
-      if(totalPages >10){
-        lineheight = 50;
-        fill(150);
-      }else if (totalPages >0){
-        lineheight = 40* totalPages / 10;
-      }else if(totalPages<0){
-        fill(0);
-        lineheight = 4;
-      }
-
-      x = 80 + 10*years[index];
-      y = 50 + index * spacing;
-      rect(x,y,10,lineheight);
-    }
-  }
-
-  var angles = [];
-  angles = calculAnglesYears(years);
-  pieChart(400, 250+ years.length * spacing, 300 ,angles);
-  addLegendYears(400, 250+ years.length * spacing, 300 ,angles);
-  
-  var angles2 = calculAnglesConference(confs);
-  pieChart(1100, 250+ years.length * spacing, 300 ,angles2);
-  addLegendConference(1100, 250+ years.length * spacing, 300 ,angles2)
 }
 
 
-function calculAnglesYears(years){
+function searchOriginalKeyWord(keywordO,word){
+  // console.log(keywordO.length);
+  for(var i=0;i<keywordO.length;i++)
+  {
+     if(keywordO[i] === word){
+       return i;
+     }
+  }
+  return null;
+}
+
+function addLegend2(a,b,datah,datav){
+  // var a = w/((parseInt(datah).max()/5+1)*5);
+  fill(125);
+ 
+  // var a = 50;
+  // var b = 40;
+  textSize(15);
+  for(var i=0;i<w/a;i++){
+    text(i+"%",a*i+160,10);
+  } 
+  textAlign(LEFT);
+  for(var i=0;i<20;i++){
+    text(datav[i],5,b*i+b);
+  }
+}
+
+function drawCircle(a,b,datas,datas2,keyword1,keyword2){
+  var dataMax = datas[0];
+  var radiusMax = datas2[0];
+  for(var i=0;i<20;i++){
+    var data = datas[i];
+    var index = searchOriginalKeyWord(keyword2,keyword1[i]);
+    var radius = datas2[index]/radiusMax*15;
+    console.log(radius)
+    fill(200*data/dataMax);
+    var x = data*a+160;
+    var y = i*b+b;
+    stroke(255);
+    ellipse(x,y,radius*2+10,radius*2+10);
+    // stroke(0);
+    point(x,y);
+  }
+}
+
+function addGrid(a){
+  stroke(255);
+  for(var i=0;i<w/a;i++){
+    line(a*i+160,20,a*i+160,h);
+  }
+}
+
+
+function calculAngles(data){
   var angle = [];
   var j=0;
-  for (var i = 4; i < years.length; i+=5) {
-    angle[j] = years[i] + years[i-1] + years[i-2] + years[i-3] + years[i-4];
-    angle[j] =  angle[j] / table.getRowCount()*360;
-    j++;
+  
+  for (var i = 0; i < 7; i++) {
+    angle[i] =  data[i] * 3.6;
+    j += angle[i]; 
   }
-  var yearsmod5 = years.length%5;
-  angle[j] = 0;
-  if(yearsmod5>0){
-    for(var i=0;i<yearsmod5;i++){
-      angle[j] += years[years.length-1-i];
-    }
-    angle[j] = angle[j] / table.getRowCount()*360;
-  }
+  angle[7] = 360-j;
   return angle;
 }
 
-function calculAnglesConference(confs){
-  var angle = [];
-  var j=0;
-  for (var i = 0; i < confs.length; i++) {
-   angle[i] = confs[i]/table.getRowCount()*360;
-  }
-  return angle;
-}
 
-//idea from https://p5js.org/examples/form-pie-chart.html
 function pieChart(x,y,diameter, data) {
   var lastAngle = 0;
-  for (var i = 0; i < data.length; i++) {
-    var gray = map(i, 0, data.length, 0, 255);
+  for (var i = 0; i < 8; i++) {
+    var gray = map(i, 0, 8, 0, 255);
     fill(gray);
     noStroke();
     arc(x, y, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
     lastAngle += radians(data[i]);
-    // console.log(lastAngle);
-    
-    rect(x-diameter-30,y-diameter/2 + 50*i,45,25);
+    rect(x-diameter-100,y-diameter/2 + 50*i,45,25);
     
   }
   
 }
 
-function addLegendYears(x,y,diameter,data){
-  for (var i = 0; i < data.length; i++) {
+
+function addLegend(x,y,diameter,data,data2){
+  textAlign(LEFT);
+  for (var i = 0; i < 8; i++) {
     fill(0,0,125);
     textSize(15);
-    var d = (data[i]/3.6).toFixed(2);
-    text(d+"%",x-diameter-85,y-diameter/2+20+ 50*i);
-    var a = x-diameter+20;
-    var b = y-diameter/2+20+ 50*i;
-    if((minYear+4+i*5)<maxYear){
-      text((minYear+i*5) + " - "+(minYear+4+i*5) ,a,b); 
-    }else if((minYear+i*5) != maxYear){
-      text((minYear+i*5) + " - "+(maxYear) ,a,b); 
+    var d = parseInt(data2[i])/3.6;
+    d = d.toFixed(2);
+    text(d+"%",x-diameter-155,y-diameter/2+20+ 50*i);
+    if(i < 7){
+    text(data[i],x-diameter-45,y-diameter/2+20+ 50*i);
     }else{
-      text(maxYear ,a,b); 
+      text("Others",x-diameter-45,y-diameter/2+20+ 50*i);
     }
   }
+  
   textSize(18);
-  var str = "Percentage of every year's conference papers between 1990 and 2015";
+  var str = "The most widely cited papers' keyword";
   text(str,x-diameter/2-180,y-diameter/2-20)
 }
 
 
-function addLegendConference(x,y,diameter,data){
-  for (var i = 0; i < data.length; i++) {
-    fill(0,0,125);
-    textSize(15);
-    var d = (data[i]/3.6).toFixed(2);
-    text(d+"%",x-diameter-85,y-diameter/2+20+ 50*i);
-    var a = x-diameter+20;
-    var b = y-diameter/2+20+ 50*i;
-    text(conferences[i],a,b);
+function triangleVis(x,y,data){
+  for(var i = 0; i<5;++i){
+    textSize(28);
   }
-  textSize(18);
-  var str = "Percentage of papers from different conferences between 1990 and 2015";
-  text(str,x-diameter/2-180,y-diameter/2-20)
+}
+
+
+function addText(){
+  var x = 20, y = h - 300;
+  textSize(15);
+  stroke(50);
+  // fill(0);
+  text("MyKeywordTool - A tool to visualize the keywords of the most-cited 21 papers in the field of visualization from 1990 to 2015",x,y-10);
+  text("-  Task: The frequency of keywords",x,y+20);
+  text("-  Position: Each circle is located in the corresponding position",x,y+40);
+  text("   Area: The size of each circle is related to its frequency in all the papers(1990-2015)",x,y+60);
+  text("   Staturation/Color: The Staturation of each circle represents the frequency in the most-cited 21 papers.",x,y+80);
+  text("-  The left column is the top 20 keywords come from the most-cited 21 papers",x,y+100);
+  text("   The firest line at the top is the percentage of each keyword within the most-cited 21 papers",x,y+120);
+  text("-  In the future, add zooming to make the visualization more clealy than now.",x,y+140) ;
+  text("                        And change the meaning of circle's color to add some more information",x,y+160);
+  text("-  Pros: Tried a set of visualization tools; Cons: repeat some data, not quite clear",x,y+180);
+  
+  
+  
   
 }
-
-
-
-
-
-
-
-
